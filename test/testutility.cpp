@@ -12,6 +12,7 @@
 
 #include "common/filesystembase.h"
 #include "common/utility.h"
+#include "libsync/httplogger.h"
 
 using namespace std::chrono_literals;
 
@@ -321,6 +322,12 @@ private Q_SLOTS:
         QCOMPARE(Tags::get(fn, testKey).value(), testValue);
         QVERIFY(Tags::remove(fn, testKey));
         QVERIFY(!Tags::get(fn, testKey).has_value());
+    }
+
+    void testHttpContentTypeIsText()
+    {
+        QVERIFY(OCC::HttpLogger::isTextBody(QStringLiteral("application/json; charset=utf-8")));
+        QVERIFY(OCC::HttpLogger::isTextBody(QStringLiteral("application/json")));
     }
 };
 
