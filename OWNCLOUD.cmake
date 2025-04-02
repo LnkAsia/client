@@ -1,7 +1,7 @@
 set( APPLICATION_NAME       "PiCloud" )
 set( APPLICATION_SHORTNAME  "PiCloud" )
 set( APPLICATION_EXECUTABLE "Picloud" )
-set( APPLICATION_DOMAIN     "owncloud.com" )
+set( APPLICATION_DOMAIN     "Picloud.com" )
 set( APPLICATION_VENDOR     "ownCloud" )
 set( APPLICATION_UPDATE_URL "https://updates.owncloud.com/client/" CACHE STRING "URL for updater" )
 set( APPLICATION_ICON_NAME  "owncloud" )
