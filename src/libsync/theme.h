@@ -110,6 +110,7 @@ public:
      * @return QString with human readable app name.
      */
     virtual QString appNameGUI() const;
+    virtual QString piappNameGUI() const;
 
     /**
      * @brief appName - Application name (short)
@@ -128,12 +129,14 @@ public:
      * @return QString with app name.
      */
     QString appName() const;
+    QString piappName() const;
 
     QString appDotVirtualFileSuffix() const;
 
     QString orgDomainName() const;
 
     QString vendor() const;
+    QString pivendor() const;
 
     /**
      * @brief configFileName
@@ -152,6 +155,7 @@ public:
 
     virtual QIcon applicationIcon() const;
     virtual QString applicationIconName() const;
+    virtual QString piapplicationIconName() const;
     virtual QIcon aboutIcon() const;
 
     /**
