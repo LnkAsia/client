@@ -13,7 +13,7 @@ ServerUrlSetupWizardPage::ServerUrlSetupWizardPage(const QUrl &serverUrl)
 {
     _ui->setupUi(this);
 
-    _ui->welcomeTextLabel->setText(tr("Welcome to %1").arg(Theme::instance()->appNameGUI()));
+    _ui->welcomeTextLabel->setText(tr("Welcome to %1").arg(Theme::instance()->piappNameGUI()));
 
     // not the best style, but we hacked such branding into the pages elsewhere, too
     if (!Theme::instance()->overrideServerUrlV2().isEmpty()) {
@@ -33,7 +33,7 @@ ServerUrlSetupWizardPage::ServerUrlSetupWizardPage(const QUrl &serverUrl)
     _ui->logoLabel->setText(QString());
     _ui->logoLabel->setPixmap(Theme::instance()->wizardHeaderLogo().pixmap(200, 200));
     //: This is the accessibility text for the logo in the setup wizard page. The parameter is the name for the (branded) application.
-    _ui->logoLabel->setAccessibleName(tr("%1 logo").arg(Theme::instance()->appNameGUI()));
+    _ui->logoLabel->setAccessibleName(tr("%1 logo").arg(Theme::instance()->piappNameGUI()));
 
     if (!Theme::instance()->wizardUrlPostfix().isEmpty()) {
         _ui->urlLineEdit->setPostfix(Theme::instance()->wizardUrlPostfix());
