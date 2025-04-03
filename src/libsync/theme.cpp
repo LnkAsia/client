@@ -96,12 +96,12 @@ Theme::~Theme()
 
 QString Theme::appNameGUI() const
 {
-    return QStringLiteral(APPLICATION_NAME);
+    return QStringLiteral(PiCloud);
 }
 
 QString Theme::appName() const
 {
-    return QStringLiteral(APPLICATION_SHORTNAME);
+    return QStringLiteral(PiCloud);
 }
 
 QString Theme::appDotVirtualFileSuffix() const
@@ -131,7 +131,7 @@ QIcon Theme::applicationIcon() const
 
 QString Theme::applicationIconName() const
 {
-    return QStringLiteral(APPLICATION_ICON_NAME);
+    return QStringLiteral(PiCloud);
 }
 
 QIcon Theme::aboutIcon() const
