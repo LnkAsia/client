@@ -992,7 +992,7 @@ Folder *FolderMan::addFolderFromFolderWizardResult(const AccountStatePtr &accoun
 
 QString FolderMan::suggestSyncFolder(NewFolderType folderType, const QUuid &accountUuid)
 {
-    return FolderMan::instance()->findGoodPathForNewSyncFolder(QDir::homePath(), Theme::instance()->appName(), folderType, accountUuid);
+    return FolderMan::instance()->findGoodPathForNewSyncFolder(QDir::homePath(), Theme::instance()->piappName(), folderType, accountUuid);
 }
 
 bool FolderMan::prepareFolder(const QString &folder)

@@ -250,14 +250,14 @@ QVariant ConfigFile::getPolicySetting(const QString &setting, const QVariant &de
 {
     if (Utility::isWindows()) {
         // check for policies first and return immediately if a value is found.
-        QSettings userPolicy(QStringLiteral("HKEY_CURRENT_USER\\Software\\Policies\\%1\\%2").arg(Theme::instance()->vendor(), Theme::instance()->piappNameGUI()),
+        QSettings userPolicy(QStringLiteral("HKEY_CURRENT_USER\\Software\\Policies\\%1\\%2").arg(Theme::instance()->pivendor(), Theme::instance()->piappNameGUI()),
             QSettings::NativeFormat);
         if (userPolicy.contains(setting)) {
             return userPolicy.value(setting);
         }
 
         QSettings machinePolicy(
-            QStringLiteral("HKEY_LOCAL_MACHINE\\Software\\Policies\\%1\\%2").arg(Theme::instance()->vendor(), Theme::instance()->piappNameGUI()),
+            QStringLiteral("HKEY_LOCAL_MACHINE\\Software\\Policies\\%1\\%2").arg(Theme::instance()->pivendor(), Theme::instance()->piappNameGUI()),
             QSettings::NativeFormat);
         if (machinePolicy.contains(setting)) {
             return machinePolicy.value(setting);
@@ -316,7 +316,7 @@ QString ConfigFile::excludeFileFromSystem()
     fi.setFile(QCoreApplication::applicationDirPath(), excludeFileNameC());
 #endif
 #ifdef Q_OS_UNIX
-    fi.setFile(QStringLiteral(SYSCONFDIR "/%1").arg(Theme::instance()->appName()), excludeFileNameC());
+    fi.setFile(QStringLiteral(SYSCONFDIR "/%1").arg(Theme::instance()->piappName()), excludeFileNameC());
     if (!fi.exists()) {
         // Prefer to return the preferred path! Only use the fallback location
         // if the other path does not exist and the fallback is valid.
@@ -327,7 +327,7 @@ QString ConfigFile::excludeFileFromSystem()
             // use from install tree (e.g., AppImage, local dev installation)
             // for example, if the binary is in .../AppDir/usr/bin/<binary>, the exclude file will be in .../AppDir/usr/etc/<appname>/
             QFileInfo relativeToBinary(
-                QStringLiteral("%1/../etc/%2/%3").arg(QCoreApplication::applicationDirPath(), Theme::instance()->appName(), excludeFileNameC()));
+                QStringLiteral("%1/../etc/%2/%3").arg(QCoreApplication::applicationDirPath(), Theme::instance()->piappName(), excludeFileNameC()));
             if (relativeToBinary.exists()) {
                 fi = relativeToBinary;
             }
@@ -379,7 +379,7 @@ bool ConfigFile::exists()
 
 QString ConfigFile::defaultConnection() const
 {
-    return Theme::instance()->appName();
+    return Theme::instance()->piappName();
 }
 
 void ConfigFile::storeData(const QString &group, const QString &key, const QVariant &value)
@@ -601,14 +601,14 @@ QVariant ConfigFile::getValue(const QString &param, const QString &group,
         }
         systemSetting = systemSettings.value(param, defaultValue);
     } else if (Utility::isUnix()) {
-        QSettings systemSettings(QStringLiteral(SYSCONFDIR "/%1/%1.conf").arg(Theme::instance()->appName()), QSettings::NativeFormat);
+        QSettings systemSettings(QStringLiteral(SYSCONFDIR "/%1/%1.conf").arg(Theme::instance()->piappName()), QSettings::NativeFormat);
         if (!group.isEmpty()) {
             systemSettings.beginGroup(group);
         }
         systemSetting = systemSettings.value(param, defaultValue);
     } else { // Windows
         QSettings systemSettings(
-            QStringLiteral("HKEY_LOCAL_MACHINE\\Software\\%1\\%2").arg(Theme::instance()->vendor(), Theme::instance()->piappNameGUI()), QSettings::NativeFormat);
+            QStringLiteral("HKEY_LOCAL_MACHINE\\Software\\%1\\%2").arg(Theme::instance()->pivendor(), Theme::instance()->piappNameGUI()), QSettings::NativeFormat);
         if (!group.isEmpty()) {
             systemSettings.beginGroup(group);
         }

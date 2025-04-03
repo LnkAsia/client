@@ -277,7 +277,7 @@ void Folder::prepareFolder(const QString &path)
     // First create a Desktop.ini so that the folder and favorite link show our application's icon.
     const QFileInfo desktopIniPath{QStringLiteral("%1/Desktop.ini").arg(path)};
     {
-        const QString updateIconKey = QStringLiteral("%1/UpdateIcon").arg(Theme::instance()->appName());
+        const QString updateIconKey = QStringLiteral("%1/UpdateIcon").arg(Theme::instance()->piappName());
         QSettings desktopIni(desktopIniPath.absoluteFilePath(), QSettings::IniFormat);
         if (desktopIni.value(updateIconKey, true).toBool()) {
             qCInfo(lcFolder) << "Creating" << desktopIni.fileName() << "to set a folder icon in Explorer.";
@@ -570,7 +570,7 @@ void Folder::startVfs()
     vfsParams.remotePath = remotePathTrailingSlash();
     vfsParams.journal = &_journal;
     vfsParams.providerDisplayName = Theme::instance()->piappNameGUI();
-    vfsParams.providerName = Theme::instance()->appName();
+    vfsParams.providerName = Theme::instance()->piappName();
     vfsParams.providerVersion = Version::version();
     vfsParams.multipleAccountsRegistered = AccountManager::instance()->accounts().size() > 1;
 

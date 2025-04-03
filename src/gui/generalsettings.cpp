@@ -154,12 +154,12 @@ void GeneralSettings::reloadConfig()
 {
     _ui->syncHiddenFilesCheckBox->setChecked(!FolderMan::instance()->ignoreHiddenFiles());
     _ui->moveToTrashCheckBox->setChecked(ConfigFile().moveToTrash());
-    if (Utility::hasSystemLaunchOnStartup(Theme::instance()->appName())) {
+    if (Utility::hasSystemLaunchOnStartup(Theme::instance()->piappName())) {
         _ui->autostartCheckBox->setChecked(true);
         _ui->autostartCheckBox->setDisabled(true);
         _ui->autostartCheckBox->setToolTip(tr("You cannot disable autostart because system-wide autostart is enabled."));
     } else {
-        const bool hasAutoStart = Utility::hasLaunchOnStartup(Theme::instance()->appName());
+        const bool hasAutoStart = Utility::hasLaunchOnStartup(Theme::instance()->piappName());
         // make sure the binary location is correctly set
         slotToggleLaunchOnStartup(hasAutoStart);
         _ui->autostartCheckBox->setChecked(hasAutoStart);

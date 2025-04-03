@@ -180,7 +180,7 @@ AccountStatePtr Application::addNewAccount(AccountPtr newAccount)
         && QCoreApplication::applicationDirPath().startsWith(QLatin1String("/Applications/"));
 #endif
     if (shouldSetAutoStart) {
-        Utility::setLaunchOnStartup(Theme::instance()->appName(), Theme::instance()->piappNameGUI(), true);
+        Utility::setLaunchOnStartup(Theme::instance()->piappName(), Theme::instance()->piappNameGUI(), true);
     }
 
     // showing the UI to show the user that the account has been added successfully

@@ -97,10 +97,10 @@ CommandLineOptions parseOptions(const QStringList &arguments)
     QTextStream descriptionTextStream(&descriptionText);
 
     descriptionTextStream << QApplication::translate("CommandLine", "%1 version %2\r\nFile synchronization desktop utility.")
-                                 .arg(Theme::instance()->appName(), OCC::Version::displayString())
+                                 .arg(Theme::instance()->piappName(), OCC::Version::displayString())
                           << Qt::endl;
 
-    if (Theme::instance()->appName() == QLatin1String("ownCloud")) {
+    if (Theme::instance()->piappName() == QLatin1String("ownCloud")) {
         descriptionTextStream
             << Qt::endl
             << Qt::endl
@@ -243,7 +243,7 @@ void setupLogging(const CommandLineOptions &options)
     // Possibly configure logging from config file
     LogBrowser::setupLoggingFromConfig();
 
-    qCInfo(lcMain) << "##################" << Theme::instance()->appName() << "locale:" << QLocale::system().name()
+    qCInfo(lcMain) << "##################" << Theme::instance()->piappName() << "locale:" << QLocale::system().name()
                    << "version:" << Theme::instance()->aboutVersions(Theme::VersionFormat::OneLiner);
     qCInfo(lcMain) << "Arguments:" << qApp->arguments();
 }
@@ -416,7 +416,7 @@ int main(int argc, char **argv)
         // Create the (Q)Application instance:
         QApplication app(argc, argv);
         app.setOrganizationDomain(Theme::instance()->orgDomainName());
-        app.setApplicationName(Theme::instance()->appName());
+        app.setApplicationName(Theme::instance()->piappName());
         app.setWindowIcon(Theme::instance()->applicationIcon());
         app.setApplicationVersion(Theme::instance()->versionSwitchOutput());
 

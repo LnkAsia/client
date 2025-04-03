@@ -30,7 +30,7 @@ namespace {
 #ifdef WITH_AUTO_UPDATER
 bool isTestPilotCloudTheme()
 {
-    return OCC::Theme::instance()->appName() == QLatin1String("testpilotcloud");
+    return OCC::Theme::instance()->piappName() == QLatin1String("testpilotcloud");
 }
 #endif
 }

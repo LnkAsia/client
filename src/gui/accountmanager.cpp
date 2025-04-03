@@ -139,10 +139,10 @@ bool AccountManager::restoreFromLegacySettings()
 
     qCInfo(lcAccountManager) << logPrefix
                              << "restoreFromLegacySettings, checking settings group"
-                             << Theme::instance()->appName();
+                             << Theme::instance()->piappName();
 
     // try to open the correctly themed settings
-    auto settings = ConfigFile::settingsWithGroup(Theme::instance()->appName());
+    auto settings = ConfigFile::settingsWithGroup(Theme::instance()->piappName());
 
     // if the settings file could not be opened, the childKeys list is empty
     // then try to load settings from a very old place

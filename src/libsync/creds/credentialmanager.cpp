@@ -23,7 +23,7 @@ namespace {
 constexpr auto tiemoutC = 5s;
 QString credentialKeyC()
 {
-    return QStringLiteral("%1_credentials").arg(Theme::instance()->appName());
+    return QStringLiteral("%1_credentials").arg(Theme::instance()->piappName());
 }
 
 QString accountKey(const Account *acc)
@@ -67,7 +67,7 @@ QKeychain::Job *CredentialManager::set(const QString &key, const QVariant &data)
 {
     OC_ASSERT(!data.isNull());
     qCInfo(lcCredentialsManager) << "set" << scopedKey(this, key);
-    auto writeJob = new QKeychain::WritePasswordJob(Theme::instance()->appName());
+    auto writeJob = new QKeychain::WritePasswordJob(Theme::instance()->piappName());
     writeJob->setKey(scopedKey(this, key));
 
     auto timer = new QTimer(writeJob);
@@ -99,7 +99,7 @@ QKeychain::Job *CredentialManager::remove(const QString &key)
     // remove immediately to prevent double invocation by clear()
     credentialsList().remove(key);
     qCInfo(lcCredentialsManager) << "del" << scopedKey(this, key);
-    auto keychainJob = new QKeychain::DeletePasswordJob(Theme::instance()->appName());
+    auto keychainJob = new QKeychain::DeletePasswordJob(Theme::instance()->piappName());
     keychainJob->setKey(scopedKey(this, key));
     connect(keychainJob, &QKeychain::DeletePasswordJob::finished, this, [keychainJob, key, this] {
         OC_ASSERT(keychainJob->error() != QKeychain::EntryNotFound);
@@ -199,7 +199,7 @@ void CredentialJob::start()
         return;
     }
 
-    _job = new QKeychain::ReadPasswordJob(Theme::instance()->appName());
+    _job = new QKeychain::ReadPasswordJob(Theme::instance()->piappName());
     _job->setKey(scopedKey(_parent, _key));
     connect(_job, &QKeychain::ReadPasswordJob::finished, this, [this] {
 #if defined(Q_OS_UNIX) && !defined(Q_OS_MAC)
