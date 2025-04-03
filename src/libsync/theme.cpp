@@ -322,7 +322,7 @@ QString Theme::aboutVersions(Theme::VersionFormat format) const
                                .arg(QSysInfo::productType(), QSysInfo::kernelVersion(), QSysInfo::buildCpuArchitecture(), Utility::currentCpuArch())};
     // may be called by both GUI and CLI, but we can display QPA only for the former
     if (auto guiApp = qobject_cast<QGuiApplication *>(qApp)) {
-        sysInfo << QStringLiteral("QPA: %1"));
+        sysInfo << QStringLiteral("QPA: %1").arg(guiApp->platformName());
     }
 
     return QCoreApplication::translate("ownCloudTheme::aboutVersions()",
