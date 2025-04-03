@@ -322,12 +322,12 @@ QString Theme::aboutVersions(Theme::VersionFormat format) const
                                .arg(QSysInfo::productType(), QSysInfo::kernelVersion(), QSysInfo::buildCpuArchitecture(), Utility::currentCpuArch())};
     // may be called by both GUI and CLI, but we can display QPA only for the former
     if (auto guiApp = qobject_cast<QGuiApplication *>(qApp)) {
-        sysInfo << QStringLiteral("QPA: %1").arg(guiApp->platformName());
+        sysInfo << QStringLiteral("QPA: %1"));
     }
 
     return QCoreApplication::translate("ownCloudTheme::aboutVersions()",
         "LNKASIA"
-        "%8"
+    
         "Libraries Qt %3, %4%7"
         "Using virtual files plugin: %5%7"
         "%6")
@@ -343,8 +343,8 @@ QString Theme::about() const
     const QString vendor = Resources::isVanillaTheme() ? QStringLiteral("LNKASIA") : QStringLiteral(APPLICATION_VENDOR);
     return tr("<p>Version %1. For more information visit <a href=\"%2\">https://lnkasia.com</a></p>"
               "<p>For known issues and help, please visit: <a href=\"https://lnkasia.com\">https://lnkasia.com</a></p>"
-              "<p>LNKASIA.COM</p>"
-              "<p><small>%6</small></p>")
+              "<p>LNKASIA</p>"
+              )
         .arg(Utility::escape(Version::displayString()), Utility::escape(QStringLiteral("https://" APPLICATION_DOMAIN)),
             Utility::escape(QStringLiteral(APPLICATION_DOMAIN)), Utility::escape(vendor), Utility::escape(appNameGUI()),
             aboutVersions(Theme::VersionFormat::RichText));
