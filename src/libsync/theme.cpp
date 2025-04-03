@@ -326,7 +326,7 @@ QString Theme::aboutVersions(Theme::VersionFormat format) const
     }
 
     return QCoreApplication::translate("ownCloudTheme::aboutVersions()",
-        "%1 %2%7"
+        "LNKASIA"
         "%8"
         "Libraries Qt %3, %4%7"
         "Using virtual files plugin: %5%7"
@@ -340,16 +340,10 @@ QString Theme::about() const
 {
     // Ideally, the vendor should be "ownCloud GmbH", but it cannot be changed without
     // changing the location of the settings and other registery keys.
-    const QString vendor = Resources::isVanillaTheme() ? QStringLiteral("ownCloud GmbH") : QStringLiteral(APPLICATION_VENDOR);
-    return tr("<p>Version %1. For more information visit <a href=\"%2\">https://%3</a></p>"
-              "<p>For known issues and help, please visit: <a href=\"https://central.owncloud.com/c/desktop-client\">https://central.owncloud.com</a></p>"
-              "<p><small>By Klaas Freitag, Daniel Molkentin, Olivier Goffart, Markus Götz, "
-              " Jan-Christoph Borchardt, Thomas Müller,<br>"
-              "Dominik Schmidt, Michael Stingl, Hannah von Reth, Fabian Müller and others.</small></p>"
-              "<p>Copyright ownCloud GmbH (A Kiteworks Company)</p>"
-              "<p>Distributed by %4 and licensed under the GNU General Public License (GPL) Version 2.0.<br/>"
-              "%5 and the %5 logo are registered trademarks of %4 in the "
-              "United States, other countries, or both.</p>"
+    const QString vendor = Resources::isVanillaTheme() ? QStringLiteral("LNKASIA") : QStringLiteral(APPLICATION_VENDOR);
+    return tr("<p>Version %1. For more information visit <a href=\"%2\">https://lnkasia.com</a></p>"
+              "<p>For known issues and help, please visit: <a href=\"https://lnkasia.com\">https://lnkasia.com</a></p>"
+              "<p>LNKASIA.COM</p>"
               "<p><small>%6</small></p>")
         .arg(Utility::escape(Version::displayString()), Utility::escape(QStringLiteral("https://" APPLICATION_DOMAIN)),
             Utility::escape(QStringLiteral(APPLICATION_DOMAIN)), Utility::escape(vendor), Utility::escape(appNameGUI()),
