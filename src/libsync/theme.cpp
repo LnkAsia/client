@@ -218,7 +218,7 @@ QString Theme::defaultServerFolder() const
 
 QString Theme::helpUrl() const
 {
-    return QStringLiteral("https://doc.owncloud.com/desktop/latest/");
+    return QStringLiteral("https://www.lnkasia.com");
 }
 
 QString Theme::conflictHelpUrl() const
