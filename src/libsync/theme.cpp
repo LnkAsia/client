@@ -96,10 +96,19 @@ Theme::~Theme()
 
 QString Theme::appNameGUI() const
 {
+    return QStringLiteral(APPLICATION_NAME);
+}
+
+QString Theme::piappNameGUI() const
+{
     return QStringLiteral(PiCloud);
 }
 
 QString Theme::appName() const
+{
+    return QStringLiteral(APPLICATION_SHORTNAME);
+}
+QString Theme::piappName() const
 {
     return QStringLiteral(PiCloud);
 }
@@ -119,6 +128,11 @@ QString Theme::vendor() const
     return QStringLiteral(APPLICATION_VENDOR);
 }
 
+QString Theme::pivendor() const
+{
+    return QStringLiteral(PiCloud);
+}
+
 QString Theme::configFileName() const
 {
     return QStringLiteral(APPLICATION_EXECUTABLE ".cfg");
@@ -131,9 +145,12 @@ QIcon Theme::applicationIcon() const
 
 QString Theme::applicationIconName() const
 {
+    return QStringLiteral(APPLICATION_ICON_NAME);
+}
+QString Theme::piapplicationIconName() const
+{
     return QStringLiteral(PiCloud);
 }
-
 QIcon Theme::aboutIcon() const
 {
     return applicationIcon();
