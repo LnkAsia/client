@@ -70,7 +70,7 @@ void displayHelpText(const QString &t)
     QString spaces(80, QLatin1Char(' ')); // Add a line of non-wrapped space to make the messagebox wide enough.
     QString text =
         QStringLiteral("<qt><pre style='white-space:pre-wrap'>") + t.toHtmlEscaped() + QStringLiteral("</pre><pre>") + spaces + QStringLiteral("</pre></qt>");
-    QMessageBox::information(nullptr, Theme::instance()->appNameGUI(), text);
+    QMessageBox::information(nullptr, Theme::instance()->piappNameGUI(), text);
 #endif
 }
 
@@ -180,7 +180,7 @@ CommandLineOptions parseOptions(const QStringList &arguments)
 
 void showDowngradeDialog()
 {
-    QMessageBox box(QMessageBox::Warning, Theme::instance()->appNameGUI(),
+    QMessageBox box(QMessageBox::Warning, Theme::instance()->piappNameGUI(),
         QCoreApplication::translate("version check",
             "Some settings were configured in newer versions of this client "
             "and use features that are not available in this version"));

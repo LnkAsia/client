@@ -250,14 +250,14 @@ QVariant ConfigFile::getPolicySetting(const QString &setting, const QVariant &de
 {
     if (Utility::isWindows()) {
         // check for policies first and return immediately if a value is found.
-        QSettings userPolicy(QStringLiteral("HKEY_CURRENT_USER\\Software\\Policies\\%1\\%2").arg(Theme::instance()->vendor(), Theme::instance()->appNameGUI()),
+        QSettings userPolicy(QStringLiteral("HKEY_CURRENT_USER\\Software\\Policies\\%1\\%2").arg(Theme::instance()->vendor(), Theme::instance()->piappNameGUI()),
             QSettings::NativeFormat);
         if (userPolicy.contains(setting)) {
             return userPolicy.value(setting);
         }
 
         QSettings machinePolicy(
-            QStringLiteral("HKEY_LOCAL_MACHINE\\Software\\Policies\\%1\\%2").arg(Theme::instance()->vendor(), Theme::instance()->appNameGUI()),
+            QStringLiteral("HKEY_LOCAL_MACHINE\\Software\\Policies\\%1\\%2").arg(Theme::instance()->vendor(), Theme::instance()->piappNameGUI()),
             QSettings::NativeFormat);
         if (machinePolicy.contains(setting)) {
             return machinePolicy.value(setting);
@@ -608,7 +608,7 @@ QVariant ConfigFile::getValue(const QString &param, const QString &group,
         systemSetting = systemSettings.value(param, defaultValue);
     } else { // Windows
         QSettings systemSettings(
-            QStringLiteral("HKEY_LOCAL_MACHINE\\Software\\%1\\%2").arg(Theme::instance()->vendor(), Theme::instance()->appNameGUI()), QSettings::NativeFormat);
+            QStringLiteral("HKEY_LOCAL_MACHINE\\Software\\%1\\%2").arg(Theme::instance()->vendor(), Theme::instance()->piappNameGUI()), QSettings::NativeFormat);
         if (!group.isEmpty()) {
             systemSettings.beginGroup(group);
         }
@@ -739,7 +739,7 @@ bool ConfigFile::monoIcons() const
     bool monoDefault = false; // On Mac we want bw by default
 #ifdef Q_OS_MAC
     // OEM themes are not obliged to ship mono icons
-    monoDefault = Theme::instance()->appNameGUI() == QStringLiteral("ownCloud");
+    monoDefault = Theme::instance()->piappNameGUI() == QStringLiteral("ownCloud");
 #endif
     return settings.value(monoIconsC(), monoDefault).toBool();
 }

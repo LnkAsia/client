@@ -103,7 +103,7 @@ ShareDialog::ShareDialog(AccountStatePtr accountState,
         _ui->label_sharePath->setText(tr("Folder: %2").arg(ocDir));
     }
 
-    this->setWindowTitle(tr("%1 Sharing").arg(Theme::instance()->appNameGUI()));
+    this->setWindowTitle(tr("%1 Sharing").arg(Theme::instance()->piappNameGUI()));
 
     if (!accountState->account()->capabilities().shareAPI()) {
         auto label = new QLabel(tr("The server does not allow sharing"));

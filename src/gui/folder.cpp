@@ -569,7 +569,7 @@ void Folder::startVfs()
     vfsParams.filesystemPath = path();
     vfsParams.remotePath = remotePathTrailingSlash();
     vfsParams.journal = &_journal;
-    vfsParams.providerDisplayName = Theme::instance()->appNameGUI();
+    vfsParams.providerDisplayName = Theme::instance()->piappNameGUI();
     vfsParams.providerName = Theme::instance()->appName();
     vfsParams.providerVersion = Version::version();
     vfsParams.multipleAccountsRegistered = AccountManager::instance()->accounts().size() > 1;
@@ -1171,14 +1171,14 @@ void Folder::warnOnNewExcludedItem(const SyncJournalFileRecord &record, QStringV
              "It will not be synchronized.")
               .arg(fi.filePath());
 
-    ocApp()->gui()->slotShowOptionalTrayMessage(Theme::instance()->appNameGUI(), message);
+    ocApp()->gui()->slotShowOptionalTrayMessage(Theme::instance()->piappNameGUI(), message);
 }
 
 void Folder::slotWatcherUnreliable(const QString &message)
 {
     qCWarning(lcFolder) << "Folder watcher for" << path() << "became unreliable:" << message;
 
-    QMessageBox *msgBox = new QMessageBox(QMessageBox::Information, Theme::instance()->appNameGUI(),
+    QMessageBox *msgBox = new QMessageBox(QMessageBox::Information, Theme::instance()->piappNameGUI(),
         tr("Changes in synchronized folders could not be tracked reliably.\n"
            "\n"
            "This means that the synchronization client might not upload local changes "
@@ -1321,7 +1321,7 @@ QString FolderDefinition::displayName() const
             }
             return a;
         } else {
-            return Theme::instance()->appNameGUI();
+            return Theme::instance()->piappNameGUI();
         }
     }
     return _displayName;

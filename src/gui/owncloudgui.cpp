@@ -481,7 +481,7 @@ void ownCloudGui::setupContextMenu()
     }
 
     _contextMenu.reset(new QMenu());
-    _contextMenu->setTitle(Theme::instance()->appNameGUI());
+    _contextMenu->setTitle(Theme::instance()->piappNameGUI());
 
     _recentActionsMenu = new QMenu(tr("Recent Changes"), _contextMenu.data());
 
@@ -604,7 +604,7 @@ void ownCloudGui::updateContextMenu()
         }
     }
 
-    _contextMenu->addAction(Theme::instance()->applicationIcon(), tr("Show %1").arg(Theme::instance()->appNameGUI()), this, &ownCloudGui::slotShowSettings);
+    _contextMenu->addAction(Theme::instance()->applicationIcon(), tr("Show %1").arg(Theme::instance()->piappNameGUI()), this, &ownCloudGui::slotShowSettings);
     _contextMenu->addSeparator();
 
     if (accountList.isEmpty()) {
@@ -662,10 +662,10 @@ void ownCloudGui::updateContextMenu()
     }
 
     if (! Theme::instance()->about().isEmpty()) {
-        _contextMenu->addAction(tr("About %1").arg(Theme::instance()->appNameGUI()), this, &ownCloudGui::slotAbout);
+        _contextMenu->addAction(tr("About %1").arg(Theme::instance()->piappNameGUI()), this, &ownCloudGui::slotAbout);
     }
 
-    _contextMenu->addAction(tr("Quit %1").arg(Theme::instance()->appNameGUI()), _app, &QApplication::quit);
+    _contextMenu->addAction(tr("Quit %1").arg(Theme::instance()->piappNameGUI()), _app, &QApplication::quit);
 
     if (_workaroundShowAndHideTray) {
         _tray->show();

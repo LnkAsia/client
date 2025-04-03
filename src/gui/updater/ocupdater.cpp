@@ -379,7 +379,7 @@ void WindowsUpdater::showNewVersionAvailableWidget(const UpdateInfo &info)
     // if the version tag is set, there is a newer version.
     QString txt = tr("<p>A new version of the %1 Client is available.</p>"
                      "<p><b>%2</b> is available for download. The installed version is %3.</p>")
-                      .arg(Utility::escape(Theme::instance()->appNameGUI()),
+                      .arg(Utility::escape(Theme::instance()->piappNameGUI()),
                           Utility::escape(info.versionString()), Utility::escape(Version::versionWithBuildNumber().toString()));
     auto *widget = new NewVersionAvailableWidget(ocApp()->gui()->settingsDialog(), txt);
 
@@ -412,7 +412,7 @@ void WindowsUpdater::showUpdateErrorDialog(const QString &targetVersion)
     QLabel *lbl = new QLabel;
     QString txt = tr("<p>A new version of the %1 Client is available but the updating process failed.</p>"
                      "<p><b>%2</b> has been downloaded. The installed version is %3.</p>")
-                      .arg(Utility::escape(Theme::instance()->appNameGUI()),
+                      .arg(Utility::escape(Theme::instance()->piappNameGUI()),
                           Utility::escape(targetVersion), Utility::escape(Version::versionWithBuildNumber().toString()));
 
     lbl->setText(txt);

@@ -183,7 +183,7 @@ AccountState::AccountState(AccountPtr account)
     }
 
     connect(account.data(), &Account::appProviderErrorOccured, this, [](const QString &error) {
-        QMessageBox *msgBox = new QMessageBox(QMessageBox::Information, Theme::instance()->appNameGUI(), error, {}, ocApp()->gui()->settingsDialog());
+        QMessageBox *msgBox = new QMessageBox(QMessageBox::Information, Theme::instance()->piappNameGUI(), error, {}, ocApp()->gui()->settingsDialog());
         msgBox->setAttribute(Qt::WA_DeleteOnClose);
         ownCloudGui::raise();
         msgBox->open();

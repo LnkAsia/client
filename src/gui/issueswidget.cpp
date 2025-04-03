@@ -205,7 +205,7 @@ IssuesWidget::IssuesWidget(QWidget *parent)
         auto item = SyncFileItemPtr::create();
         item->_status = SyncFileItem::FilenameReserved;
         item->_file = file;
-        item->_errorString = tr("The file %1 was ignored as its name is reserved by %2").arg(file, Theme::instance()->appNameGUI());
+        item->_errorString = tr("The file %1 was ignored as its name is reserved by %2").arg(file, Theme::instance()->piappNameGUI());
         _model->addProtocolItem(ProtocolItem { f, item });
     });
 

@@ -497,7 +497,7 @@ void SocketApi::command_VERSION(const QString &, SocketListener *listener)
 
 void SocketApi::command_SHARE_MENU_TITLE(const QString &, SocketListener *listener)
 {
-    listener->sendMessage(QLatin1String("SHARE_MENU_TITLE:") + tr("Share with %1", "parameter is ownCloud").arg(Theme::instance()->appNameGUI()));
+    listener->sendMessage(QLatin1String("SHARE_MENU_TITLE:") + tr("Share with %1", "parameter is ownCloud").arg(Theme::instance()->piappNameGUI()));
 }
 
 class GetOrCreatePublicLinkShare : public QObject
@@ -854,7 +854,7 @@ void SocketApi::command_GET_STRINGS(const QString &argument, SocketListener *lis
 {
     static std::array<std::pair<QString, QString>, 5> strings { {
         { QStringLiteral("SHARE_MENU_TITLE"), tr("Share...") },
-        { QStringLiteral("CONTEXT_MENU_TITLE"), Theme::instance()->appNameGUI() },
+        { QStringLiteral("CONTEXT_MENU_TITLE"), Theme::instance()->piappNameGUI() },
         { QStringLiteral("COPY_PRIVATE_LINK_MENU_TITLE"), tr("Copy private link to clipboard") },
         { QStringLiteral("EMAIL_PRIVATE_LINK_MENU_TITLE"), tr("Send private link by email...") },
     } };

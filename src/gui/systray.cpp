@@ -72,7 +72,7 @@ void Systray::showMessage(const QString &title, const QString &message, const QI
 #else
 #ifdef USE_FDO_NOTIFICATIONS
     if (QDBusInterface(NOTIFICATIONS_SERVICE_C(), NOTIFICATIONS_PATH_C(), NOTIFICATIONS_IFACE_C()).isValid()) {
-        QList<QVariant> args = QList<QVariant>() << Theme::instance()->appNameGUI() << quint32(0) << Theme::instance()->applicationIconName() << title
+        QList<QVariant> args = QList<QVariant>() << Theme::instance()->piappNameGUI() << quint32(0) << Theme::instance()->applicationIconName() << title
                                                  << message << QStringList() << QVariantMap() << qint32(-1);
         QDBusMessage method =
             QDBusMessage::createMethodCall(NOTIFICATIONS_SERVICE_C(), NOTIFICATIONS_PATH_C(), NOTIFICATIONS_IFACE_C(), QStringLiteral("Notify"));
@@ -88,7 +88,7 @@ void Systray::showMessage(const QString &title, const QString &message, const QI
 
 void Systray::setToolTip(const QString &tip)
 {
-    QSystemTrayIcon::setToolTip(tr("%1: %2").arg(Theme::instance()->appNameGUI(), tip));
+    QSystemTrayIcon::setToolTip(tr("%1: %2").arg(Theme::instance()->piappNameGUI(), tip));
 }
 
 } // namespace OCC

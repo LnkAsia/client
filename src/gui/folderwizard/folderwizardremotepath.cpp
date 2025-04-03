@@ -103,7 +103,7 @@ void FolderWizardRemotePath::slotCreateRemoteFolder(const QString &folder)
 void FolderWizardRemotePath::slotCreateRemoteFolderFinished()
 {
     qCDebug(lcFolderWizard) << "webdav mkdir request finished";
-    showWarn(tr("Folder was successfully created on %1.").arg(Theme::instance()->appNameGUI()));
+    showWarn(tr("Folder was successfully created on %1.").arg(Theme::instance()->piappNameGUI()));
     slotRefreshFolders();
     _ui->folderEntry->setText(static_cast<MkColJob *>(sender())->path());
     slotLsColFolderEntry();
@@ -113,10 +113,10 @@ void FolderWizardRemotePath::slotHandleMkdirNetworkError(QNetworkReply *reply)
 {
     qCWarning(lcFolderWizard) << "webdav mkdir request failed:" << reply->error();
     if (!folderWizardPrivate()->accountState()->account()->credentials()->stillValid(reply)) {
-        showWarn(tr("Authentication failed accessing %1").arg(Theme::instance()->appNameGUI()));
+        showWarn(tr("Authentication failed accessing %1").arg(Theme::instance()->piappNameGUI()));
     } else {
         showWarn(tr("Failed to create the folder on %1. Please check manually.")
-                     .arg(Theme::instance()->appNameGUI()));
+                     .arg(Theme::instance()->piappNameGUI()));
     }
 }
 
@@ -213,7 +213,7 @@ void FolderWizardRemotePath::slotUpdateDirectories(const QStringList &list)
     QTreeWidgetItem *root = _ui->folderTreeWidget->topLevelItem(0);
     if (!root) {
         root = new QTreeWidgetItem(_ui->folderTreeWidget);
-        root->setText(0, Theme::instance()->appNameGUI());
+        root->setText(0, Theme::instance()->piappNameGUI());
         root->setIcon(0, Theme::instance()->applicationIcon());
         root->setToolTip(0, tr("Choose this to sync the entire account"));
         root->setData(0, Qt::UserRole, QStringLiteral("/"));

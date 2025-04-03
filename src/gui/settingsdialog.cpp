@@ -87,7 +87,7 @@ SettingsDialog::SettingsDialog(ownCloudGui *gui, QWidget *parent)
     , _gui(gui)
 {
     setObjectName(QStringLiteral("Settings")); // required as group for saveGeometry call
-    setWindowTitle(Theme::instance()->appNameGUI());
+    setWindowTitle(Theme::instance()->piappNameGUI());
     _ui->setupUi(this);
 
     setMinimumSize(::minimumSizeHint(this));
@@ -102,8 +102,8 @@ SettingsDialog::SettingsDialog(ownCloudGui *gui, QWidget *parent)
     connect(
         _ui->quickWidget->engine(), &QQmlEngine::quit, QApplication::instance(),
         [this] {
-            auto box = new QMessageBox(QMessageBox::Question, tr("Quit %1").arg(Theme::instance()->appNameGUI()),
-                tr("Are you sure you want to quit %1?").arg(Theme::instance()->appNameGUI()), QMessageBox::Yes | QMessageBox::No, this);
+            auto box = new QMessageBox(QMessageBox::Question, tr("Quit %1").arg(Theme::instance()->piappNameGUI()),
+                tr("Are you sure you want to quit %1?").arg(Theme::instance()->piappNameGUI()), QMessageBox::Yes | QMessageBox::No, this);
             box->setAttribute(Qt::WA_DeleteOnClose);
             connect(box, &QMessageBox::accepted, this, [] {
                 // delay quit to prevent a Qt 6.6 crash in the destructor of the dialog
@@ -135,9 +135,9 @@ SettingsDialog::SettingsDialog(ownCloudGui *gui, QWidget *parent)
     connect(_ui->dialogStack, &QStackedWidget::currentChanged, this, [this] {
         auto *w = _ui->dialogStack->currentWidget();
         if (!w->windowTitle().isEmpty()) {
-            setWindowTitle(tr("%1 - %2").arg(Theme::instance()->appNameGUI(), w->windowTitle()));
+            setWindowTitle(tr("%1 - %2").arg(Theme::instance()->piappNameGUI(), w->windowTitle()));
         } else {
-            setWindowTitle(Theme::instance()->appNameGUI());
+            setWindowTitle(Theme::instance()->piappNameGUI());
         }
     });
 

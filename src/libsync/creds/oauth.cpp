@@ -163,7 +163,7 @@ Q_SIGNALS:
 private:
     void registerClientOnline()
     {
-        const QJsonObject json({ { QStringLiteral("client_name"), QStringLiteral("%1 %2").arg(Theme::instance()->appNameGUI(), OCC::Version::versionWithBuildNumber().toString()) },
+        const QJsonObject json({ { QStringLiteral("client_name"), QStringLiteral("%1 %2").arg(Theme::instance()->piappNameGUI(), OCC::Version::versionWithBuildNumber().toString()) },
             { QStringLiteral("redirect_uris"), QJsonArray { QStringLiteral("http://127.0.0.1") } },
             { QStringLiteral("application_type"), QStringLiteral("native") },
             { QStringLiteral("token_endpoint_auth_method"), QStringLiteral("client_secret_basic") } });
@@ -391,7 +391,7 @@ void OAuth::startAuthentication()
                                     const QString message = tr("<h1>Wrong user</h1>"
                                                                "<p>You logged-in with user <em>%1</em>, but must login with user <em>%2</em>.<br>"
                                                                "Please return to the %3 client and restart the authentication.</p>")
-                                                                .arg(fetchUserInfo.userName(), _davUser, Theme::instance()->appNameGUI());
+                                                                .arg(fetchUserInfo.userName(), _davUser, Theme::instance()->piappNameGUI());
                                     httpReplyAndClose(socket, QStringLiteral("403 Forbidden"), tr("Wrong user"), message);
                                     Q_EMIT result(Error);
                                 } else {
