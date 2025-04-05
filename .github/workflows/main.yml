@@ -85,13 +85,14 @@ jobs:
     - name: Clone CraftMaster
       run: git clone --depth=1 https://invent.kde.org/kde/craftmaster.git "$env:HOME/craft/CraftMaster/CraftMaster"
     
-      - name: Cleanup conflicting blueprint folder
+    - name: Cleanup conflicting blueprint folder
       run: |
         $conflictFolder = "${env:GITHUB_WORKSPACE}\craft\craft-blueprints-owncloud\craft-blueprints-kde"
         if (Test-Path $conflictFolder) {
           Remove-Item -Recurse -Force $conflictFolder
         }
       shell: pwsh
+      
     - name: Craft setup
       run: |
         New-Item -Path ~/cache -ItemType Directory -ErrorAction SilentlyContinue
