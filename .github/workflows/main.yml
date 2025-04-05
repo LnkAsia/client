@@ -81,7 +81,11 @@ jobs:
       with:
         path: ~/cache
         key: ${{ runner.os }}-${{ matrix.target }}
-
+    - name: Clean Craft environment
+        run: |
+          rm -rf ~/craft/CraftMaster/blueprints/*
+          rm -rf ~/craft/CraftMaster/downloads/*
+    
     - name: Clone CraftMaster
       run: git clone --depth=1 https://invent.kde.org/kde/craftmaster.git "$env:HOME/craft/CraftMaster/CraftMaster"
 
