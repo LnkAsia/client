@@ -81,8 +81,9 @@ jobs:
       with:
         path: ~/cache
         key: ${{ runner.os }}-${{ matrix.target }}
+    
     - name: Clean Craft environment
-        run: |
+      run: |
           rm -rf ~/craft/CraftMaster/blueprints/*
           rm -rf ~/craft/CraftMaster/downloads/*
     
