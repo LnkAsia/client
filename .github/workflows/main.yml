@@ -82,18 +82,6 @@ jobs:
         path: ~/cache
         key: ${{ runner.os }}-${{ matrix.target }}
 
-    - name: Clone craft-blueprints-picloud
-      run: |
-        git clone https://github.com/LnkAsia/craft-blueprints-picloud.git "${env:GITHUB_WORKSPACE}/craft-blueprints-picloud"
-    - name: Delete old KDE blueprints folder
-      run: |
-        $kdePath = "$env:GITHUB_WORKSPACE\\craft\\craft-blueprints-picloud\\craft-blueprints-kde"
-        if (Test-Path $kdePath) {
-          Remove-Item -Recurse -Force $kdePath
-          Write-Host "Deleted existing conflicting folder: $kdePath"
-        }
-      shell: pwsh
-
     - name: Clone CraftMaster
       run: git clone --depth=1 https://invent.kde.org/kde/craftmaster.git "$env:HOME/craft/CraftMaster/CraftMaster"
 
