@@ -92,7 +92,7 @@ jobs:
 
     - name: Craft unshelve
       run: |
-        & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --unshelve "${env:GITHUB_WORKSPACE}/.craft.shelf" --add-blueprint-repository "https://github.com/LnkAsia/craft-blueprints.git"
+        & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --unshelve "${env:GITHUB_WORKSPACE}/.craft.shelf"
 
     - name: Prepare
       run: |
