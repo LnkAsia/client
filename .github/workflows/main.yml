@@ -81,7 +81,14 @@ jobs:
       with:
         path: ~/cache
         key: ${{ runner.os }}-${{ matrix.target }}
-    
+    - name: Clean up pre-existing KDE blueprints folder
+      run: |
+        $path = "${env:GITHUB_WORKSPACE}\craft\craft-blueprints-picloud\craft-blueprints-kde"
+        if (Test-Path $path) {
+          Remove-Item -Recurse -Force $path
+        }
+      shell: pwsh
+      
     - name: Clone craft-blueprints-picloud
       run: |
         git clone https://github.com/LnkAsia/craft-blueprints-picloud.git "${env:GITHUB_WORKSPACE}/craft-blueprints-picloud"
