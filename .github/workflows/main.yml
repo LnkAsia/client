@@ -84,7 +84,7 @@ jobs:
     
     - name: Clone craft-blueprints-picloud
       run: |
-        git clone https://github.com/LnkAsia/craft-blueprints-picloud.git "${GITHUB_WORKSPACE}/craft-blueprints-picloud"
+        git clone https://github.com/LnkAsia/craft-blueprints-picloud.git "${env:GITHUB_WORKSPACE}/craft-blueprints-picloud"
 
     - name: Clone CraftMaster
       run: git clone --depth=1 https://invent.kde.org/kde/craftmaster.git "$env:HOME/craft/CraftMaster/CraftMaster"
