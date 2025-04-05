@@ -84,21 +84,6 @@ jobs:
 
     - name: Clone CraftMaster
       run: git clone --depth=1 https://invent.kde.org/kde/craftmaster.git "$env:HOME/craft/CraftMaster/CraftMaster"
-    
-    - name: Cleanup conflicting blueprint folders (Windows)
-      if: runner.os == 'Windows'
-      run: |
-        $conflictFolder1 = "C:\craft\craft-blueprints-picloud\craft-blueprints-picloud"
-        $conflictFolder2 = "C:\craft\craft-blueprints-picloud\craft-blueprints-kde"
-        if (Test-Path $conflictFolder1) {
-          Write-Host "Removing $conflictFolder1"
-          Remove-Item -Recurse -Force $conflictFolder1
-        }
-        if (Test-Path $conflictFolder2) {
-          Write-Host "Removing $conflictFolder2"
-          Remove-Item -Recurse -Force $conflictFolder2
-        }
-    
 
     - name: Craft setup
       run: |
