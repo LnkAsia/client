@@ -82,11 +82,7 @@ jobs:
         path: ~/cache
         key: ${{ runner.os }}-${{ matrix.target }}
     
-    - name: Clean Craft environment
-      run: |
-          rm -rf ~/craft/CraftMaster/blueprints/*
-          rm -rf ~/craft/CraftMaster/downloads/*
-    
+  
     - name: Clone CraftMaster
       run: git clone --depth=1 https://invent.kde.org/kde/craftmaster.git "$env:HOME/craft/CraftMaster/CraftMaster"
 
@@ -94,7 +90,10 @@ jobs:
       run: |
         New-Item -Path ~/cache -ItemType Directory -ErrorAction SilentlyContinue
         & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" --setup
-
+    - name: Clean Craft environment
+      run: |
+          rm -rf ~/craft/CraftMaster/blueprints/*
+          rm -rf ~/craft/CraftMaster/downloads/*
     - name: Craft unshelve
       run: |
         & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --unshelve "${env:GITHUB_WORKSPACE}/.craft.shelf"
