@@ -116,8 +116,7 @@ jobs:
             !define PRODUCTNAME "piCloud"
             !define VERSION "6.0.0"
             !define SHORTCUT_NAME "piCloud"
-            !define UNINSTALL_DISPLAY_NAME "piCloud Client"
-            '@
+            !define UNINSTALL_DISPLAY_NAME "piCloud Client"'@
 
 
       - name: Package application
