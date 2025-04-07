@@ -101,16 +101,32 @@ jobs:
           $env:BUILD_DIR = $(& "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --get buildDir -q owncloud-client)
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run pwsh "${env:GITHUB_WORKSPACE}/.github/workflows/.run-clang-tidy.ps1"
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run python3 -m clang_html "${env:TMPDIR}/clang-tidy.log" -o "${env:GITHUB_WORKSPACE}/binaries/clang-tidy.html"
-      - name: Update NSIS Script with piCloud Branding
+
+      - name: Replace NSIS Script
         run: |
-          $nsiFile = "${env:GITHUB_WORKSPACE}/installer/nsis/owncloud.nsi"  # Adjust path if needed
-          if (Test-Path $nsiFile) {
-            # Replace all occurrences of 'ownCloud' with 'piCloud'
-            (Get-Content $nsiFile) -replace 'ownCloud', 'piCloud' -replace 'owncloud', 'picloud' | Set-Content $nsiFile
-            Write-Output "Updated NSIS script at $nsiFile"
-          } else {
-            Write-Error "NSIS script not found at $nsiFile!"
-          }
+          # Create directory if it doesn't exist
+          New-Item -ItemType Directory -Force -Path "${env:GITHUB_WORKSPACE}/installer/nsis"
+          
+          @"
+          ; Custom NSIS script for piCloud
+          !define PRODUCT_NAME "PiCloud"
+          !define PRODUCT_PUBLISHER "LNKASIA TECHSOL"
+          !define PRODUCT_WEB_SITE "https://lnkasia.com"
+          
+          ; Basic NSIS configuration
+          OutFile "piCloud_Installer.exe"
+          Name "piCloud"
+          InstallDir "$PROGRAMFILES\piCloud"
+          
+          ; ... (add other NSIS sections as needed)
+          Section "Install"
+            SetOutPath "$INSTDIR"
+            File "/path/to/your/files/*"
+            CreateShortCut "$SMPROGRAMS\piCloud.lnk" "$INSTDIR\piCloud.exe"
+          SectionEnd
+          "@ | Out-File -FilePath "${env:GITHUB_WORKSPACE}/installer/nsis/picloud.nsi" -Encoding ASCII
+
+
       - name: Package
         run: |
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache --package owncloud/owncloud-client
