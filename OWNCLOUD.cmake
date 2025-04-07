@@ -1,5 +1,5 @@
 set( APPLICATION_NAME       "piCloud" )
-set( APPLICATION_SHORTNAME  "piCloud" )
+set( APPLICATION_SHORTNAME  "ownCloud" )
 set( APPLICATION_EXECUTABLE "owncloud" )
 set( APPLICATION_DOMAIN     "owncloud.com" )
 set( APPLICATION_VENDOR     "piCloud" )
