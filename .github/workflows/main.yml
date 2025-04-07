@@ -106,48 +106,19 @@ jobs:
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run pwsh "${env:GITHUB_WORKSPACE}/.github/workflows/.run-clang-tidy.ps1"
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run python3 -m clang_html "${env:TMPDIR}/clang-tidy.log" -o "${env:ARTIFACT_DIR}/clang-tidy-$env:VERSION.html"
       
-      - name: Modify NSIS installer script
+      - name: Inject piCloud branding.nsi
+        shell: pwsh
         run: |
-          # Find and validate NSIS file
-          $nsisFile = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Filter "owncloud-client.nsi" | 
-                      Select-Object -First 1 -ExpandProperty FullName
-          
-          if (-not $nsisFile) {
-              Write-Error "owncloud-client.nsi file not found!"
-              exit 1
-          }
+          $brandingDir = ".craft/blueprints/owncloud/owncloud-client/files"
+          New-Item -ItemType Directory -Force -Path $brandingDir | Out-Null
+          Set-Content -Path "$brandingDir/branding.nsi" -Value @'
+            !define COMPANYNAME "LNKASIA TECHSOL."
+            !define PRODUCTNAME "piCloud"
+            !define VERSION "6.0.0"
+            !define SHORTCUT_NAME "piCloud"
+            !define UNINSTALL_DISPLAY_NAME "piCloud Client"
+            '@
 
-          # Create backup
-          $backupFile = "$nsisFile.backup_$(Get-Date -Format 'yyyyMMddHHmmss')"
-          Copy-Item $nsisFile $backupFile
-          
-          # Read and transform content
-          $content = Get-Content $nsisFile -Raw
-          
-          # Branding replacements
-          $replacements = @{
-              'ownCloud' = 'PiCloud'
-              'owncloud' = 'picloud'
-              'https://owncloud\.com' = 'https://lnkasia.com'
-              'Copyright © ownCloud GmbH' = 'Copyright © LNKASIA TECHSOL'
-              'ProductName "ownCloud"' = 'ProductName "PiCloud"'
-              'DisplayName "ownCloud"' = 'DisplayName "PiCloud"'
-          }
-          
-          foreach ($key in $replacements.Keys) {
-              $content = $content -replace $key, $replacements[$key]
-          }
-          
-          # Add version information
-          $versionBlock = @"
-
-
-          
-          # Write modified content
-          Set-Content -Path $nsisFile -Value $content -Encoding UTF8
-          
-          Write-Output "Successfully modified NSIS installer: $nsisFile"
-          Write-Output "Backup created at: $backupFile"
 
       - name: Package application
         run: |
