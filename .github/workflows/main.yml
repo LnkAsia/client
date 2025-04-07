@@ -112,11 +112,12 @@ jobs:
           $brandingDir = ".craft/blueprints/owncloud/owncloud-client/files"
           New-Item -ItemType Directory -Force -Path $brandingDir | Out-Null
           Set-Content -Path "$brandingDir/branding.nsi" -Value @'
-            !define COMPANYNAME "LNKASIA TECHSOL."
-            !define PRODUCTNAME "piCloud"
-            !define VERSION "6.0.0"
-            !define SHORTCUT_NAME "piCloud"
-            !define UNINSTALL_DISPLAY_NAME "piCloud Client"'@
+          !define COMPANYNAME "LNKASIA TECHSOL."
+          !define PRODUCTNAME "piCloud"
+          !define VERSION "6.0.0"
+          !define SHORTCUT_NAME "piCloud"
+          !define UNINSTALL_DISPLAY_NAME "piCloud Client"
+          '@
 
 
       - name: Package application
