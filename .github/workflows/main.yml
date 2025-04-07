@@ -101,7 +101,16 @@ jobs:
           $env:BUILD_DIR = $(& "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --get buildDir -q owncloud-client)
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run pwsh "${env:GITHUB_WORKSPACE}/.github/workflows/.run-clang-tidy.ps1"
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run python3 -m clang_html "${env:TMPDIR}/clang-tidy.log" -o "${env:GITHUB_WORKSPACE}/binaries/clang-tidy.html"
-
+      - name: Update NSIS Script with piCloud Branding
+        run: |
+          $nsiFile = "${env:GITHUB_WORKSPACE}/installer/nsis/owncloud.nsi"  # Adjust path if needed
+          if (Test-Path $nsiFile) {
+            # Replace all occurrences of 'ownCloud' with 'piCloud'
+            (Get-Content $nsiFile) -replace 'ownCloud', 'piCloud' -replace 'owncloud', 'picloud' | Set-Content $nsiFile
+            Write-Output "Updated NSIS script at $nsiFile"
+          } else {
+            Write-Error "NSIS script not found at $nsiFile!"
+          }
       - name: Package
         run: |
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache --package owncloud/owncloud-client
