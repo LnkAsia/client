@@ -105,7 +105,16 @@ jobs:
       - name: Package
         run: |
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache --package owncloud/owncloud-client
-
+      - name: Replace owncloud.rc with picloud branding
+        run: |
+          $rcFile = "${env:GITHUB_WORKSPACE}/binaries/owncloud.rc"
+          if (Test-Path $rcFile) {
+            (Get-Content $rcFile) -replace 'ownCloud', 'piCloud' -replace 'owncloud', 'picloud' | Set-Content $rcFile
+            # Optional: Rename file (if needed)
+            Move-Item $rcFile "${env:GITHUB_WORKSPACE}/binaries/picloud.rc"
+          } else {
+            Write-Error "owncloud.rc not found at $rcFile!"
+          }
       - name: Prepare artifacts
         run: |
           Copy-Item "$env:HOME/craft/binaries/*" "${env:GITHUB_WORKSPACE}/binaries/" -ErrorAction SilentlyContinue
