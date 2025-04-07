@@ -141,17 +141,7 @@ jobs:
           # Add version information
           $versionBlock = @"
 
-; ======================
-; PiCloud Version Info
-; ======================
-!define VERSION "$env:VERSION"
-!define BUILD_DATE "$(Get-Date -Format 'yyyy-MM-dd')"
-!define COMPANY_NAME "LNKASIA TECHSOL"
-!define LEGAL_COPYRIGHT "Copyright © $(Get-Date -Format 'yyyy') LNKASIA TECHSOL. All rights reserved."
-"@
-          
-          # Insert version block after header
-          $content = $content -replace '(?s)(\A.*?^\}\s*?\n)', "`$1`n$versionBlock`n"
+
           
           # Write modified content
           Set-Content -Path $nsisFile -Value $content -Encoding UTF8
