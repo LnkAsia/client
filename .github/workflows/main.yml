@@ -73,14 +73,19 @@ jobs:
           @"
           !define COMPANYNAME "LNKASIA TECHSOL."
           !define PRODUCTNAME "piCloud"
-          !define VERSION "${{ env.VERSION }}"
+          !define VERSION "$env:VERSION"
           !define SHORTCUT_NAME "piCloud"
           !define UNINSTALL_DISPLAY_NAME "piCloud Client"
           "@ | Out-File -FilePath "$brandingDir/branding.nsi" -Encoding ASCII
-
-          # Also patch any hardcoded references in the source
-          (Get-ChildItem -Recurse -Filter "*.nsi" | Select-String -Pattern "ownCloud" -List).Path | ForEach-Object {
-              (Get-Content $_) -replace 'ownCloud', 'piCloud' | Set-Content $_
+          
+          # Safely patch NSI files if they exist
+          $nsiFiles = Get-ChildItem -Recurse -Filter "*.nsi" -ErrorAction SilentlyContinue
+          if ($nsiFiles) {
+              $nsiFiles | ForEach-Object {
+                  (Get-Content $_.FullName) -replace 'ownCloud', 'piCloud' | Set-Content $_.FullName
+              }
+          } else {
+              Write-Host "No .nsi files found to patch - continuing anyway"
           }
 
       - name: Craft unshelve
