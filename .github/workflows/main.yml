@@ -101,7 +101,12 @@ jobs:
           $env:BUILD_DIR = $(& "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --get buildDir -q owncloud-client)
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run pwsh "${env:GITHUB_WORKSPACE}/.github/workflows/.run-clang-tidy.ps1"
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run python3 -m clang_html "${env:TMPDIR}/clang-tidy.log" -o "${env:GITHUB_WORKSPACE}/binaries/clang-tidy.html"
-
+      
+      - name: Find NSIS Script
+        run: |
+          # Search entire repository for .nsi files
+          Get-ChildItem -Path ${env:GITHUB_WORKSPACE} -Recurse -Filter *.nsi | Select-Object FullName
+          
       - name: Replace NSIS Script
         run: |
           # Create directory if it doesn't exist
@@ -130,16 +135,7 @@ jobs:
       - name: Package
         run: |
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache --package owncloud/owncloud-client
-      - name: Replace owncloud.rc with picloud branding
-        run: |
-          $rcFile = "${env:GITHUB_WORKSPACE}/binaries/owncloud.rc"
-          if (Test-Path $rcFile) {
-            (Get-Content $rcFile) -replace 'ownCloud', 'piCloud' -replace 'owncloud', 'picloud' | Set-Content $rcFile
-            # Optional: Rename file (if needed)
-            Move-Item $rcFile "${env:GITHUB_WORKSPACE}/binaries/picloud.rc"
-          } else {
-            Write-Error "owncloud.rc not found at $rcFile!"
-          }
+ 
       - name: Prepare artifacts
         run: |
           Copy-Item "$env:HOME/craft/binaries/*" "${env:GITHUB_WORKSPACE}/binaries/" -ErrorAction SilentlyContinue
