@@ -12,16 +12,16 @@ concurrency:
   group: ${{ github.head_ref || github.run_id }}
   cancel-in-progress: true
 
-permissions: {}
+permissions:
+  contents: read
 
-defaults:
-  run:
-    shell: pwsh
+env:
+  VERSION: ${{ github.run_number }}
+  ARTIFACT_DIR: ${{ github.workspace }}/binaries
 
 jobs:
   build:
-    permissions:
-      contents: read
+    timeout-minutes: 60
     strategy:
       fail-fast: true
       matrix:
@@ -41,6 +41,8 @@ jobs:
     steps:
       - name: Check out latest commit
         uses: actions/checkout@v4
+        with:
+          fetch-depth: 0
 
       - uses: actions/setup-python@v5
         with:
@@ -50,7 +52,9 @@ jobs:
         uses: actions/cache@v4
         with:
           path: ~/cache
-          key: ${{ runner.os }}-${{ matrix.target }}
+          key: ${{ runner.os }}-${{ matrix.target }}-${{ hashFiles('**/CMakeLists.txt') }}
+          restore-keys: |
+            ${{ runner.os }}-${{ matrix.target }}-
 
       - name: Clone CraftMaster
         run: git clone --depth=1 https://invent.kde.org/kde/craftmaster.git "$env:HOME/craft/CraftMaster/CraftMaster"
@@ -64,9 +68,9 @@ jobs:
         run: |
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --unshelve "${env:GITHUB_WORKSPACE}/.craft.shelf"
 
-      - name: Prepare
+      - name: Prepare build environment
         run: |
-          New-Item -ItemType Directory "${env:GITHUB_WORKSPACE}/binaries/"
+          New-Item -ItemType Directory "${env:ARTIFACT_DIR}" -Force
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set forceAsserts=true owncloud/owncloud-client
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set srcDir="${env:GITHUB_WORKSPACE}" owncloud/owncloud-client
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c dev-utils/nsis
@@ -100,52 +104,79 @@ jobs:
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run python3 -m pip install clang-html
           $env:BUILD_DIR = $(& "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --get buildDir -q owncloud-client)
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run pwsh "${env:GITHUB_WORKSPACE}/.github/workflows/.run-clang-tidy.ps1"
-          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run python3 -m clang_html "${env:TMPDIR}/clang-tidy.log" -o "${env:GITHUB_WORKSPACE}/binaries/clang-tidy.html"
+          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run python3 -m clang_html "${env:TMPDIR}/clang-tidy.log" -o "${env:ARTIFACT_DIR}/clang-tidy-$env:VERSION.html"
       
-      - name: Find and modify owncloud-client.nsi
+      - name: Modify NSIS installer script
         run: |
-          # Find the original NSIS file
-          $nsisFile = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Filter "owncloud-client.nsi" | Select-Object -First 1 -ExpandProperty FullName
+          # Find and validate NSIS file
+          $nsisFile = Get-ChildItem -Path $env:GITHUB_WORKSPACE -Recurse -Filter "owncloud-client.nsi" | 
+                      Select-Object -First 1 -ExpandProperty FullName
           
           if (-not $nsisFile) {
               Write-Error "owncloud-client.nsi file not found!"
               exit 1
           }
 
-          # Backup original file
-          Copy-Item $nsisFile "$nsisFile.original"
+          # Create backup
+          $backupFile = "$nsisFile.backup_$(Get-Date -Format 'yyyyMMddHHmmss')"
+          Copy-Item $nsisFile $backupFile
           
-          # Read and modify the content
+          # Read and transform content
           $content = Get-Content $nsisFile -Raw
           
-          # Replace application-specific strings
-          $content = $content -replace 'ownCloud','PiCloud' `
-                              -replace 'owncloud','picloud' `
-                              -replace 'https://owncloud.com','https://lnkasia.com' `
-                              -replace 'Copyright © ownCloud GmbH','Copyright © LNKASIA TECHSOL'
+          # Branding replacements
+          $replacements = @{
+              'ownCloud' = 'PiCloud'
+              'owncloud' = 'picloud'
+              'https://owncloud\.com' = 'https://lnkasia.com'
+              'Copyright © ownCloud GmbH' = 'Copyright © LNKASIA TECHSOL'
+              'ProductName "ownCloud"' = 'ProductName "PiCloud"'
+              'DisplayName "ownCloud"' = 'DisplayName "PiCloud"'
+          }
           
+          foreach ($key in $replacements.Keys) {
+              $content = $content -replace $key, $replacements[$key]
+          }
+          
+          # Add version information
+          $versionBlock = @"
 
-
-          # Write the modified content back
+; ======================
+; PiCloud Version Info
+; ======================
+!define VERSION "$env:VERSION"
+!define BUILD_DATE "$(Get-Date -Format 'yyyy-MM-dd')"
+!define COMPANY_NAME "LNKASIA TECHSOL"
+!define LEGAL_COPYRIGHT "Copyright © $(Get-Date -Format 'yyyy') LNKASIA TECHSOL. All rights reserved."
+"@
+          
+          # Insert version block after header
+          $content = $content -replace '(?s)(\A.*?^\}\s*?\n)', "`$1`n$versionBlock`n"
+          
+          # Write modified content
           Set-Content -Path $nsisFile -Value $content -Encoding UTF8
           
-          Write-Output "Successfully modified $nsisFile"
+          Write-Output "Successfully modified NSIS installer: $nsisFile"
+          Write-Output "Backup created at: $backupFile"
 
-      # [Remaining steps remain the same]
-
-
-      - name: Package
+      - name: Package application
         run: |
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache --package owncloud/owncloud-client
- 
-      - name: Prepare artifacts
+          Copy-Item "$env:HOME/craft/binaries/*" "${env:ARTIFACT_DIR}/" -ErrorAction SilentlyContinue
+
+      - name: Save build state
         run: |
-          Copy-Item "$env:HOME/craft/binaries/*" "${env:GITHUB_WORKSPACE}/binaries/" -ErrorAction SilentlyContinue
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --shelve "${env:GITHUB_WORKSPACE}/.craft.shelf"
-          Copy-Item "${env:GITHUB_WORKSPACE}/.craft.shelf" "${env:GITHUB_WORKSPACE}/binaries/"
+          Copy-Item "${env:GITHUB_WORKSPACE}/.craft.shelf" "${env:ARTIFACT_DIR}/"
 
       - name: Upload artifacts
         uses: actions/upload-artifact@v4
         with:
-          name: ${{ matrix.name }}
-          path: ${{ github.workspace }}/binaries/*
+          name: PiCloud-Build-${{ matrix.name }}-${{ env.VERSION }}
+          path: |
+            ${{ env.ARTIFACT_DIR }}/*.exe
+            ${{ env.ARTIFACT_DIR }}/*.msi
+            ${{ env.ARTIFACT_DIR }}/clang-tidy-*.html
+            ${{ env.ARTIFACT_DIR }}/.craft.shelf
+          retention-days: 7
+          if-no-files-found: error
