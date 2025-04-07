@@ -64,6 +64,25 @@ jobs:
           New-Item -Path ~/cache -ItemType Directory -ErrorAction SilentlyContinue
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" --setup
 
+      # Inject branding BEFORE any build steps
+      - name: Inject piCloud branding
+        shell: pwsh
+        run: |
+          $brandingDir = ".craft/blueprints/owncloud/owncloud-client/files"
+          New-Item -ItemType Directory -Force -Path $brandingDir | Out-Null
+          @"
+          !define COMPANYNAME "LNKASIA TECHSOL."
+          !define PRODUCTNAME "piCloud"
+          !define VERSION "${{ env.VERSION }}"
+          !define SHORTCUT_NAME "piCloud"
+          !define UNINSTALL_DISPLAY_NAME "piCloud Client"
+          "@ | Out-File -FilePath "$brandingDir/branding.nsi" -Encoding ASCII
+
+          # Also patch any hardcoded references in the source
+          (Get-ChildItem -Recurse -Filter "*.nsi" | Select-String -Pattern "ownCloud" -List).Path | ForEach-Object {
+              (Get-Content $_) -replace 'ownCloud', 'piCloud' | Set-Content $_
+          }
+
       - name: Craft unshelve
         run: |
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --unshelve "${env:GITHUB_WORKSPACE}/.craft.shelf"
@@ -106,24 +125,19 @@ jobs:
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run pwsh "${env:GITHUB_WORKSPACE}/.github/workflows/.run-clang-tidy.ps1"
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run python3 -m clang_html "${env:TMPDIR}/clang-tidy.log" -o "${env:ARTIFACT_DIR}/clang-tidy-$env:VERSION.html"
       
-      - name: Inject piCloud branding.nsi
-        shell: pwsh
-        run: |
-          $brandingDir = ".craft/blueprints/owncloud/owncloud-client/files"
-          New-Item -ItemType Directory -Force -Path $brandingDir | Out-Null
-          Set-Content -Path "$brandingDir/branding.nsi" -Value @'
-          !define COMPANYNAME "LNKASIA TECHSOL."
-          !define PRODUCTNAME "piCloud"
-          !define VERSION "6.0.0"
-          !define SHORTCUT_NAME "piCloud"
-          !define UNINSTALL_DISPLAY_NAME "piCloud Client"
-          '@
-
-
       - name: Package application
         run: |
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache --package owncloud/owncloud-client
           Copy-Item "$env:HOME/craft/binaries/*" "${env:ARTIFACT_DIR}/" -ErrorAction SilentlyContinue
+
+      - name: Rename installer
+        shell: pwsh
+        run: |
+          $installer = Get-ChildItem -Path "${env:ARTIFACT_DIR}/*ownCloud*.exe" -ErrorAction SilentlyContinue
+          if ($installer) {
+              $newName = $installer.Name -replace 'ownCloud', 'piCloud'
+              Rename-Item -Path $installer.FullName -NewName $newName
+          }
 
       - name: Save build state
         run: |
@@ -135,7 +149,7 @@ jobs:
         with:
           name: PiCloud-Build-${{ matrix.name }}-${{ env.VERSION }}
           path: |
-            ${{ env.ARTIFACT_DIR }}/*.exe
+            ${{ env.ARTIFACT_DIR }}/*piCloud*.exe
             ${{ env.ARTIFACT_DIR }}/*.msi
             ${{ env.ARTIFACT_DIR }}/clang-tidy-*.html
             ${{ env.ARTIFACT_DIR }}/.craft.shelf
