@@ -119,7 +119,13 @@ jobs:
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set forceAsserts=true owncloud/owncloud-client
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set srcDir="${env:GITHUB_WORKSPACE}" owncloud/owncloud-client
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c dev-utils/nsis
-          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c dev-utils/binutils
+          if (-not (Test-Path "D:\craft\CraftMaster\downloads\archives\dev-utils\binutils")) {
+            Write-Host "dev-utils/binutils not found, attempting to download..."
+            & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c dev-utils/binutils
+          }
+          else {
+            Write-Host "dev-utils/binutils found, proceeding with build..."
+          }
 
       - name: Install dependencies
         run: |
