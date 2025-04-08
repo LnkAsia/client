@@ -64,7 +64,7 @@ jobs:
           New-Item -Path ~/cache -ItemType Directory -ErrorAction SilentlyContinue
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" --setup
 
-      # ===== BRANDING SETUP =====
+
       - name: Setup piCloud Branding
         shell: pwsh
         run: |
