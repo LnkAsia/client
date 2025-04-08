@@ -64,13 +64,15 @@ jobs:
           New-Item -Path ~/cache -ItemType Directory -ErrorAction SilentlyContinue
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" --setup
 
-      # 1. BRANDING INJECTION - EARLY STAGE
-      - name: Setup piCloud branding
+      # ===== BRANDING SETUP =====
+      - name: Setup piCloud Branding
         shell: pwsh
         run: |
-          # Create branding.nsi
+          # 1. Create branding directory
           $brandingDir = ".craft/blueprints/owncloud/owncloud-client/files"
           New-Item -ItemType Directory -Force -Path $brandingDir | Out-Null
+          
+          # 2. Create branding.nsi
           @"
           !define COMPANYNAME "LNKASIA TECHSOL."
           !define PRODUCTNAME "piCloud"
@@ -79,16 +81,37 @@ jobs:
           !define UNINSTALL_DISPLAY_NAME "piCloud Client"
           "@ | Out-File "$brandingDir/branding.nsi" -Encoding ASCII
 
-          # Patch NSIS template if exists
-          $templatePath = "installer/nsis/owncloud-client.nsi.in"
-          if (Test-Path $templatePath) {
-              (Get-Content $templatePath) -replace 'ownCloud', 'piCloud' | Set-Content $templatePath
-              (Get-Content $templatePath) -replace 'PRODUCT_NAME "ownCloud"', '!include ".craft/blueprints/owncloud/owncloud-client/files/branding.nsi"' | Set-Content $templatePath
+          # 3. Patch source files
+          $filesToPatch = @(
+              "CMakeLists.txt",
+              "installer/*.*",
+              "src/*.*",
+              ".craft/blueprints/owncloud/owncloud-client/*.py"
+          )
+          
+          Get-ChildItem -Path $filesToPatch -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
+              (Get-Content $_.FullName -Raw) -replace 'ownCloud', 'piCloud' | Set-Content $_.FullName -NoNewline
           }
 
+      - name: Verify Branding Files
+        shell: pwsh
+        run: |
+          $brandingFile = ".craft/blueprints/owncloud/owncloud-client/files/branding.nsi"
+          if (-not (Test-Path $brandingFile)) {
+              Write-Error "Branding file missing at $brandingFile"
+              exit 1
+          }
+          Write-Host "Branding file verified at $brandingFile"
+
+      # ===== BUILD SETUP =====
       - name: Craft unshelve
         run: |
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --unshelve "${env:GITHUB_WORKSPACE}/.craft.shelf"
+
+      - name: Configure Build with Branding
+        run: |
+          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set "applicationName=piCloud" owncloud/owncloud-client
+          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set "vendorName=LNKASIA TECHSOL" owncloud/owncloud-client
 
       - name: Prepare build environment
         run: |
@@ -96,12 +119,13 @@ jobs:
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set forceAsserts=true owncloud/owncloud-client
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set srcDir="${env:GITHUB_WORKSPACE}" owncloud/owncloud-client
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c dev-utils/nsis
+          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c dev-utils/binutils
 
       - name: Install dependencies
         run: |
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --install-deps owncloud/owncloud-client
 
-      # 2. BUILD STAGE
+      # ===== BUILD STEPS =====
       - name: Build
         if: ${{ !matrix.useSonarCloud }}
         run: |
@@ -128,23 +152,20 @@ jobs:
           $env:BUILD_DIR = $(& "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --get buildDir -q owncloud-client)
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run pwsh "${env:GITHUB_WORKSPACE}/.github/workflows/.run-clang-tidy.ps1"
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run python3 -m clang_html "${env:TMPDIR}/clang-tidy.log" -o "${env:ARTIFACT_DIR}/clang-tidy-$env:VERSION.html"
-      
-      # 3. POST-BUILD BRANDING ENFORCEMENT
-      - name: Patch Generated NSIS Script
+
+      # ===== POST-BUILD BRANDING ENFORCEMENT =====
+      - name: Patch Generated Installer Scripts
         shell: pwsh
         run: |
-          # Find the generated NSIS script
-          $nsiFile = Get-ChildItem -Path "$env:HOME/craft/build" -Recurse -Filter "owncloud-client.nsi" -File | Select-Object -First 1
+          # 1. Find all generated NSIS scripts
+          $nsiFiles = Get-ChildItem -Path "$env:HOME/craft/build" -Recurse -Filter "*.nsi*" -File
           
-          if ($nsiFile) {
-              # Force include our branding file
-              $brandingInclude = '!include ".craft/blueprints/owncloud/owncloud-client/files/branding.nsi"'
-              $content = Get-Content $nsiFile.FullName -Raw
-              $newContent = $brandingInclude + "`r`n" + $content
-              Set-Content -Path $nsiFile.FullName -Value $newContent -NoNewline
-              
-              # Force replace all remaining instances
-              (Get-Content $nsiFile.FullName) -replace 'ownCloud', 'piCloud' | Set-Content $nsiFile.FullName
+          # 2. Force include branding and replace strings
+          $nsiFiles | ForEach-Object {
+              $content = Get-Content $_.FullName -Raw
+              $newContent = '!include ".craft/blueprints/owncloud/owncloud-client/files/branding.nsi"' + "`r`n" + $content
+              $newContent = $newContent -replace 'ownCloud', 'piCloud'
+              Set-Content -Path $_.FullName -Value $newContent -NoNewline
           }
 
       - name: Package application
@@ -152,23 +173,43 @@ jobs:
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache --package owncloud/owncloud-client
           Copy-Item "$env:HOME/craft/binaries/*" "${env:ARTIFACT_DIR}/" -ErrorAction SilentlyContinue
 
-      # 4. FINAL BRANDING VERIFICATION
+      # ===== FINAL VERIFICATION =====
       - name: Verify Installer Branding
         shell: pwsh
         run: |
+          # 1. Find installer
           $installer = Get-ChildItem -Path "${env:ARTIFACT_DIR}/*.exe" | Select-Object -First 1
-          if ($installer) {
-              # Rename installer file
-              $newName = $installer.Name -replace 'ownCloud', 'piCloud'
-              Rename-Item -Path $installer.FullName -NewName $newName
-              
-              # Verify branding in binary
-              $stringsOutput = & strings.exe "$($installer.DirectoryName)/$newName" | Select-String "piCloud" -CaseSensitive
-              if (-not $stringsOutput) {
-                  Write-Error "Branding verification failed - 'piCloud' not found in installer!"
-                  exit 1
+          if (-not $installer) {
+              Write-Error "No installer found in ${env:ARTIFACT_DIR}"
+              exit 1
+          }
+
+          # 2. Rename installer
+          $newName = $installer.Name -replace 'ownCloud', 'piCloud'
+          Rename-Item -Path $installer.FullName -NewName $newName
+
+          # 3. Verify branding strings
+          $requiredStrings = @(
+              "piCloud",
+              "LNKASIA",
+              "TECHSOL",
+              "piCloud Client"
+          )
+          
+          $missingStrings = @()
+          foreach ($str in $requiredStrings) {
+              $found = & strings.exe "$($installer.DirectoryName)/$newName" | Select-String $str
+              if (-not $found) {
+                  $missingStrings += $str
               }
           }
+
+          if ($missingStrings.Count -gt 0) {
+              Write-Error "Missing branding strings: $($missingStrings -join ', ')"
+              exit 1
+          }
+          
+          Write-Host "All branding strings verified successfully"
 
       - name: Save build state
         run: |
