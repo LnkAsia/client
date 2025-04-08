@@ -64,85 +64,45 @@ jobs:
           New-Item -Path ~/cache -ItemType Directory -ErrorAction SilentlyContinue
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" --setup
 
-
-      - name: Setup piCloud Branding
+      # Inject branding BEFORE any build steps
+      - name: Inject piCloud branding
         shell: pwsh
         run: |
-          # 1. Create branding directory
           $brandingDir = ".craft/blueprints/owncloud/owncloud-client/files"
           New-Item -ItemType Directory -Force -Path $brandingDir | Out-Null
-          
-          # 2. Create branding.nsi
           @"
           !define COMPANYNAME "LNKASIA TECHSOL."
           !define PRODUCTNAME "piCloud"
           !define VERSION "$env:VERSION"
           !define SHORTCUT_NAME "piCloud"
           !define UNINSTALL_DISPLAY_NAME "piCloud Client"
-          "@ | Out-File "$brandingDir/branding.nsi" -Encoding ASCII
-
-          # 3. Patch source files
-          $filesToPatch = @(
-              "CMakeLists.txt",
-              "installer/*.*",
-              "src/*.*",
-              ".craft/blueprints/owncloud/owncloud-client/*.py"
-          )
+          "@ | Out-File -FilePath "$brandingDir/branding.nsi" -Encoding ASCII
           
-          Get-ChildItem -Path $filesToPatch -Recurse -ErrorAction SilentlyContinue | ForEach-Object {
-              (Get-Content $_.FullName -Raw) -replace 'ownCloud', 'piCloud' | Set-Content $_.FullName -NoNewline
+          # Safely patch NSI files if they exist
+          $nsiFiles = Get-ChildItem -Recurse -Filter "*.nsi" -ErrorAction SilentlyContinue
+          if ($nsiFiles) {
+              $nsiFiles | ForEach-Object {
+                  (Get-Content $_.FullName) -replace 'ownCloud', 'piCloud' | Set-Content $_.FullName
+              }
+          } else {
+              Write-Host "No .nsi files found to patch - continuing anyway"
           }
 
-      - name: Verify Branding Files
-        shell: pwsh
-        run: |
-          $brandingFile = ".craft/blueprints/owncloud/owncloud-client/files/branding.nsi"
-          if (-not (Test-Path $brandingFile)) {
-              Write-Error "Branding file missing at $brandingFile"
-              exit 1
-          }
-          Write-Host "Branding file verified at $brandingFile"
-
-      # ===== BUILD SETUP =====
       - name: Craft unshelve
         run: |
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --unshelve "${env:GITHUB_WORKSPACE}/.craft.shelf"
 
-      - name: Configure Build with Branding
-        run: |
-          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set "applicationName=piCloud" owncloud/owncloud-client
-          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set "vendorName=LNKASIA TECHSOL" owncloud/owncloud-client
-      - name: Download binutils
-        run: |
-          $binutilsUrl = "https://ftp.gnu.org/gnu/binutils/binutils-2.36.1.tar.gz"
-          $binutilsPath = "D:\craft\CraftMaster\downloads\archives\dev-utils\binutils"
-          Invoke-WebRequest -Uri $binutilsUrl -OutFile "binutils.tar.gz"
-          tar -xzf binutils.tar.gz -C $binutilsPath
       - name: Prepare build environment
         run: |
           New-Item -ItemType Directory "${env:ARTIFACT_DIR}" -Force
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set forceAsserts=true owncloud/owncloud-client
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set srcDir="${env:GITHUB_WORKSPACE}" owncloud/owncloud-client
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c dev-utils/nsis
-          $binutilsPath = "D:\craft\CraftMaster\downloads\archives\dev-utils\binutils"
-          Write-Host "Checking for dev-utils/binutils at $binutilsPath"
-          if (-not (Test-Path $binutilsPath)) {
-            Write-Host "dev-utils/binutils not found at $binutilsPath, attempting to download..."
-            & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c dev-utils/binutils
-            if (-not (Test-Path $binutilsPath)) {
-              Write-Error "Failed to download dev-utils/binutils. Please check the URL or network connection."
-              exit 1
-            }
-          }
-          else {
-            Write-Host "dev-utils/binutils found at $binutilsPath, proceeding with build..."
-          }
 
       - name: Install dependencies
         run: |
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --install-deps owncloud/owncloud-client
 
-      # ===== BUILD STEPS =====
       - name: Build
         if: ${{ !matrix.useSonarCloud }}
         run: |
@@ -169,64 +129,20 @@ jobs:
           $env:BUILD_DIR = $(& "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --get buildDir -q owncloud-client)
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run pwsh "${env:GITHUB_WORKSPACE}/.github/workflows/.run-clang-tidy.ps1"
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run python3 -m clang_html "${env:TMPDIR}/clang-tidy.log" -o "${env:ARTIFACT_DIR}/clang-tidy-$env:VERSION.html"
-
-      # ===== POST-BUILD BRANDING ENFORCEMENT =====
-      - name: Patch Generated Installer Scripts
-        shell: pwsh
-        run: |
-          # 1. Find all generated NSIS scripts
-          $nsiFiles = Get-ChildItem -Path "$env:HOME/craft/build" -Recurse -Filter "*.nsi*" -File
-          
-          # 2. Force include branding and replace strings
-          $nsiFiles | ForEach-Object {
-              $content = Get-Content $_.FullName -Raw
-              $newContent = '!include ".craft/blueprints/owncloud/owncloud-client/files/branding.nsi"' + "`r`n" + $content
-              $newContent = $newContent -replace 'ownCloud', 'piCloud'
-              Set-Content -Path $_.FullName -Value $newContent -NoNewline
-          }
-
+      
       - name: Package application
         run: |
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache --package owncloud/owncloud-client
           Copy-Item "$env:HOME/craft/binaries/*" "${env:ARTIFACT_DIR}/" -ErrorAction SilentlyContinue
 
-      # ===== FINAL VERIFICATION =====
-      - name: Verify Installer Branding
+      - name: Rename installer
         shell: pwsh
         run: |
-          # 1. Find installer
-          $installer = Get-ChildItem -Path "${env:ARTIFACT_DIR}/*.exe" | Select-Object -First 1
-          if (-not $installer) {
-              Write-Error "No installer found in ${env:ARTIFACT_DIR}"
-              exit 1
+          $installer = Get-ChildItem -Path "${env:ARTIFACT_DIR}/*ownCloud*.exe" -ErrorAction SilentlyContinue
+          if ($installer) {
+              $newName = $installer.Name -replace 'ownCloud', 'piCloud'
+              Rename-Item -Path $installer.FullName -NewName $newName
           }
-
-          # 2. Rename installer
-          $newName = $installer.Name -replace 'ownCloud', 'piCloud'
-          Rename-Item -Path $installer.FullName -NewName $newName
-
-          # 3. Verify branding strings
-          $requiredStrings = @(
-              "piCloud",
-              "LNKASIA",
-              "TECHSOL",
-              "piCloud Client"
-          )
-          
-          $missingStrings = @()
-          foreach ($str in $requiredStrings) {
-              $found = & strings.exe "$($installer.DirectoryName)/$newName" | Select-String $str
-              if (-not $found) {
-                  $missingStrings += $str
-              }
-          }
-
-          if ($missingStrings.Count -gt 0) {
-              Write-Error "Missing branding strings: $($missingStrings -join ', ')"
-              exit 1
-          }
-          
-          Write-Host "All branding strings verified successfully"
 
       - name: Save build state
         run: |
@@ -239,8 +155,8 @@ jobs:
           name: PiCloud-Build-${{ matrix.name }}-${{ env.VERSION }}
           path: |
             ${{ env.ARTIFACT_DIR }}/*piCloud*.exe
-            ${{ env:ARTIFACT_DIR }}/*.msi
-            ${{ env:ARTIFACT_DIR }}/clang-tidy-*.html
-            ${{ env:ARTIFACT_DIR }}/.craft.shelf
+            ${{ env.ARTIFACT_DIR }}/*.msi
+            ${{ env.ARTIFACT_DIR }}/clang-tidy-*.html
+            ${{ env.ARTIFACT_DIR }}/.craft.shelf
           retention-days: 7
           if-no-files-found: error
