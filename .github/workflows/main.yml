@@ -112,13 +112,31 @@ jobs:
         run: |
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set "applicationName=piCloud" owncloud/owncloud-client
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set "vendorName=LNKASIA TECHSOL" owncloud/owncloud-client
-
+      - name: Download binutils
+        run: |
+          $binutilsUrl = "https://ftp.gnu.org/gnu/binutils/binutils-2.36.1.tar.gz"
+          $binutilsPath = "D:\craft\CraftMaster\downloads\archives\dev-utils\binutils"
+          Invoke-WebRequest -Uri $binutilsUrl -OutFile "binutils.tar.gz"
+          tar -xzf binutils.tar.gz -C $binutilsPath
       - name: Prepare build environment
         run: |
           New-Item -ItemType Directory "${env:ARTIFACT_DIR}" -Force
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set forceAsserts=true owncloud/owncloud-client
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set srcDir="${env:GITHUB_WORKSPACE}" owncloud/owncloud-client
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c dev-utils/nsis
+          $binutilsPath = "D:\craft\CraftMaster\downloads\archives\dev-utils\binutils"
+          Write-Host "Checking for dev-utils/binutils at $binutilsPath"
+          if (-not (Test-Path $binutilsPath)) {
+            Write-Host "dev-utils/binutils not found at $binutilsPath, attempting to download..."
+            & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c dev-utils/binutils
+            if (-not (Test-Path $binutilsPath)) {
+              Write-Error "Failed to download dev-utils/binutils. Please check the URL or network connection."
+              exit 1
+            }
+          }
+          else {
+            Write-Host "dev-utils/binutils found at $binutilsPath, proceeding with build..."
+          }
 
       - name: Install dependencies
         run: |
@@ -221,8 +239,8 @@ jobs:
           name: PiCloud-Build-${{ matrix.name }}-${{ env.VERSION }}
           path: |
             ${{ env.ARTIFACT_DIR }}/*piCloud*.exe
-            ${{ env.ARTIFACT_DIR }}/*.msi
-            ${{ env.ARTIFACT_DIR }}/clang-tidy-*.html
-            ${{ env.ARTIFACT_DIR }}/.craft.shelf
+            ${{ env:ARTIFACT_DIR }}/*.msi
+            ${{ env:ARTIFACT_DIR }}/clang-tidy-*.html
+            ${{ env:ARTIFACT_DIR }}/.craft.shelf
           retention-days: 7
           if-no-files-found: error
