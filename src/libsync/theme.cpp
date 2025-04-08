@@ -96,7 +96,7 @@ Theme::~Theme()
 
 QString Theme::appNameGUI() const
 {
-    return QStringLiteral(APPLICATION_NAME);
+    return QStringLiteral("PiCloud");
 }
 
 QString Theme::piappNameGUI() const
@@ -106,7 +106,7 @@ QString Theme::piappNameGUI() const
 
 QString Theme::appName() const
 {
-    return QStringLiteral(APPLICATION_SHORTNAME);
+    return QStringLiteral("PiCloud");
 }
 QString Theme::piappName() const
 {
@@ -125,7 +125,7 @@ QString Theme::orgDomainName() const
 
 QString Theme::vendor() const
 {
-    return QStringLiteral(APPLICATION_VENDOR);
+    return QStringLiteral("PiCloud");
 }
 
 QString Theme::pivendor() const
@@ -145,7 +145,7 @@ QIcon Theme::applicationIcon() const
 
 QString Theme::applicationIconName() const
 {
-    return QStringLiteral(APPLICATION_ICON_NAME);
+    return QStringLiteral("PiCloud");
 }
 QString Theme::piapplicationIconName() const
 {
