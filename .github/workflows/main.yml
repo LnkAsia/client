@@ -64,10 +64,11 @@ jobs:
           New-Item -Path ~/cache -ItemType Directory -ErrorAction SilentlyContinue
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" --setup
 
-      # Inject branding BEFORE any build steps
-      - name: Inject piCloud branding
+      # 1. BRANDING INJECTION - EARLY STAGE
+      - name: Setup piCloud branding
         shell: pwsh
         run: |
+          # Create branding.nsi
           $brandingDir = ".craft/blueprints/owncloud/owncloud-client/files"
           New-Item -ItemType Directory -Force -Path $brandingDir | Out-Null
           @"
@@ -76,16 +77,13 @@ jobs:
           !define VERSION "$env:VERSION"
           !define SHORTCUT_NAME "piCloud"
           !define UNINSTALL_DISPLAY_NAME "piCloud Client"
-          "@ | Out-File -FilePath "$brandingDir/branding.nsi" -Encoding ASCII
-          
-          # Safely patch NSI files if they exist
-          $nsiFiles = Get-ChildItem -Recurse -Filter "*.nsi" -ErrorAction SilentlyContinue
-          if ($nsiFiles) {
-              $nsiFiles | ForEach-Object {
-                  (Get-Content $_.FullName) -replace 'ownCloud', 'piCloud' | Set-Content $_.FullName
-              }
-          } else {
-              Write-Host "No .nsi files found to patch - continuing anyway"
+          "@ | Out-File "$brandingDir/branding.nsi" -Encoding ASCII
+
+          # Patch NSIS template if exists
+          $templatePath = "installer/nsis/owncloud-client.nsi.in"
+          if (Test-Path $templatePath) {
+              (Get-Content $templatePath) -replace 'ownCloud', 'piCloud' | Set-Content $templatePath
+              (Get-Content $templatePath) -replace 'PRODUCT_NAME "ownCloud"', '!include ".craft/blueprints/owncloud/owncloud-client/files/branding.nsi"' | Set-Content $templatePath
           }
 
       - name: Craft unshelve
@@ -103,6 +101,7 @@ jobs:
         run: |
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --install-deps owncloud/owncloud-client
 
+      # 2. BUILD STAGE
       - name: Build
         if: ${{ !matrix.useSonarCloud }}
         run: |
@@ -130,18 +129,45 @@ jobs:
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run pwsh "${env:GITHUB_WORKSPACE}/.github/workflows/.run-clang-tidy.ps1"
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run python3 -m clang_html "${env:TMPDIR}/clang-tidy.log" -o "${env:ARTIFACT_DIR}/clang-tidy-$env:VERSION.html"
       
+      # 3. POST-BUILD BRANDING ENFORCEMENT
+      - name: Patch Generated NSIS Script
+        shell: pwsh
+        run: |
+          # Find the generated NSIS script
+          $nsiFile = Get-ChildItem -Path "$env:HOME/craft/build" -Recurse -Filter "owncloud-client.nsi" -File | Select-Object -First 1
+          
+          if ($nsiFile) {
+              # Force include our branding file
+              $brandingInclude = '!include ".craft/blueprints/owncloud/owncloud-client/files/branding.nsi"'
+              $content = Get-Content $nsiFile.FullName -Raw
+              $newContent = $brandingInclude + "`r`n" + $content
+              Set-Content -Path $nsiFile.FullName -Value $newContent -NoNewline
+              
+              # Force replace all remaining instances
+              (Get-Content $nsiFile.FullName) -replace 'ownCloud', 'piCloud' | Set-Content $nsiFile.FullName
+          }
+
       - name: Package application
         run: |
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache --package owncloud/owncloud-client
           Copy-Item "$env:HOME/craft/binaries/*" "${env:ARTIFACT_DIR}/" -ErrorAction SilentlyContinue
 
-      - name: Rename installer
+      # 4. FINAL BRANDING VERIFICATION
+      - name: Verify Installer Branding
         shell: pwsh
         run: |
-          $installer = Get-ChildItem -Path "${env:ARTIFACT_DIR}/*ownCloud*.exe" -ErrorAction SilentlyContinue
+          $installer = Get-ChildItem -Path "${env:ARTIFACT_DIR}/*.exe" | Select-Object -First 1
           if ($installer) {
+              # Rename installer file
               $newName = $installer.Name -replace 'ownCloud', 'piCloud'
               Rename-Item -Path $installer.FullName -NewName $newName
+              
+              # Verify branding in binary
+              $stringsOutput = & strings.exe "$($installer.DirectoryName)/$newName" | Select-String "piCloud" -CaseSensitive
+              if (-not $stringsOutput) {
+                  Write-Error "Branding verification failed - 'piCloud' not found in installer!"
+                  exit 1
+              }
           }
 
       - name: Save build state
