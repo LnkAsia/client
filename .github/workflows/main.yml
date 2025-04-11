@@ -95,44 +95,44 @@ jobs:
       - name: Prepare build environment
         run: |
           New-Item -ItemType Directory "${env:ARTIFACT_DIR}" -Force
-          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set forceAsserts=true owncloud/owncloud-client
-          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set srcDir="${env:GITHUB_WORKSPACE}" owncloud/owncloud-client
+          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set forceAsserts=true picloud/picloud-client
+          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --set srcDir="${env:GITHUB_WORKSPACE}" picloud/picloud-client
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c dev-utils/nsis
 
       - name: Install dependencies
         run: |
-          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --install-deps owncloud/owncloud-client
+          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --install-deps picloud/picloud-client
 
       - name: Build
         if: ${{ !matrix.useSonarCloud }}
         run: |
-          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache owncloud/owncloud-client
+          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache picloud/picloud-client
 
       - name: Build for SonarCloud
         if: ${{ matrix.useSonarCloud }}
         run: |
-          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache --configure owncloud/owncloud-client
-          $env:BUILD_DIR = $(& "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --get buildDir -q owncloud-client)
+          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache --configure picloud/picloud-client
+          $env:BUILD_DIR = $(& "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --get buildDir -q picloud-client)
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run pwsh "${env:GITHUB_WORKSPACE}/.github/workflows/.sonar.ps1" --build
-          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache --install --qmerge owncloud/owncloud-client
+          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache --install --qmerge picloud/picloud-client
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run pwsh "${env:GITHUB_WORKSPACE}/.github/workflows/.sonar.ps1" --analyze
 
       - name: Run tests
         run: |
-          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache --test owncloud/owncloud-client
+          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache --test picloud/picloud-client
 
       - name: Clang tidy
         if: github.event_name != 'pull_request'
         run: |
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c libs/llvm python-modules/pip
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run python3 -m pip install clang-html
-          $env:BUILD_DIR = $(& "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --get buildDir -q owncloud-client)
+          $env:BUILD_DIR = $(& "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --get buildDir -q picloud-client)
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run pwsh "${env:GITHUB_WORKSPACE}/.github/workflows/.run-clang-tidy.ps1"
           & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --run python3 -m clang_html "${env:TMPDIR}/clang-tidy.log" -o "${env:ARTIFACT_DIR}/clang-tidy-$env:VERSION.html"
       
       - name: Package application
         run: |
-          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache --package owncloud/owncloud-client
+          & "${env:GITHUB_WORKSPACE}/.github/workflows/.craft.ps1" -c --no-cache --package picloud/picloud-client
           Copy-Item "$env:HOME/craft/binaries/*" "${env:ARTIFACT_DIR}/" -ErrorAction SilentlyContinue
 
       - name: Rename installer
